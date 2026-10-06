@@ -75,7 +75,7 @@ The website does not send the inquiry itself or confirm delivery.
 
 Displayed contact information:
 - Email: info@seen.ae
-- Phone: +20 115 818 9622
+- Phone: +9710555332714
 - Positioning: United Arab Emirates · Serving the GCC
 
 TECHNOLOGY AND FILE STRUCTURE

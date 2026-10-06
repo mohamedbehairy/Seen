@@ -1,25 +1,291 @@
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-let lang='en';try{lang=localStorage.getItem('seen-language')==='ar'?'ar':'en'}catch{}
-const services=[['Digital Marketing','التسويق الرقمي'],['Content Production','إنتاج المحتوى'],['Event Coverage','تغطية الفعاليات']];
-const industries=[['Restaurants & Cafes','المطاعم والكافيهات'],['Clinics','العيادات'],['Personal Care & Cosmetics','العناية والتجميل'],['Sports Academies','الأكاديميات الرياضية'],['Health & Wellness','الصحة والعافية']];
-const selectedServices=new Set();let selectedIndustry=null;
-function tags(){[['#service-tags',services,true],['#industry-tags',industries,false]].forEach(([el,list,multi])=>{$(el).replaceChildren();list.forEach((item,i)=>{let b=document.createElement('button');b.type='button';b.textContent=item[lang==='ar'?1:0];b.setAttribute('aria-pressed',multi?selectedServices.has(i):selectedIndustry===i);b.onclick=()=>{if(multi){selectedServices.has(i)?selectedServices.delete(i):selectedServices.add(i)}else selectedIndustry=selectedIndustry===i?null:i;tags()};$(el).append(b)})})}
-function translate(){document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';$$('[data-en]').forEach(e=>e.innerHTML=e.dataset[lang]);$('#language').innerHTML=lang==='en'?'EN <span>/</span> AR':'العربية <span>/</span> الإنجليزية';$('#language').setAttribute('aria-label',lang==='en'?'Switch to Arabic':'التبديل إلى الإنجليزية');$('#menu').setAttribute('aria-label',lang==='en'?'Toggle menu':'فتح وإغلاق القائمة');$('#nav').setAttribute('aria-label',lang==='en'?'Main navigation':'القائمة الرئيسية');document.title=lang==='en'?'Seen Media — Be seen. Be remembered.':'سين للإعلام والدعاية — حضور يترك أثرًا';tags();splitPhilosophy();updatePortfolioStatus();$$('[data-alt-en]').forEach(e=>e.alt=e.dataset[lang==='ar'?'altAr':'altEn']);$$('[data-label-en]').forEach(e=>e.setAttribute('aria-label',e.dataset[lang==='ar'?'labelAr':'labelEn']));$$('[data-src-en]').forEach(e=>e.src=e.dataset[lang==='ar'?'srcAr':'srcEn']);$('#form-status').textContent='';$$('input,textarea').forEach(e=>e.setCustomValidity(''))}
-$('#language').onclick=()=>{lang=lang==='en'?'ar':'en';try{localStorage.setItem('seen-language',lang)}catch{}translate()};translate();
-$('#menu').onclick=()=>{let open=$('#nav').classList.toggle('open');$('#menu').setAttribute('aria-expanded',String(open));$('#menu').textContent=open?'×':'☰'};$$('nav a').forEach(a=>a.onclick=()=>{$('#nav').classList.remove('open');$('#menu').setAttribute('aria-expanded','false');$('#menu').textContent='☰'});
-$$('.service').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)$$('.service').forEach(o=>{if(o!==d)o.open=false})}));
-$$('[data-service]').forEach(a=>a.onclick=()=>{selectedServices.add(Number(a.dataset.service));tags()});
-$$('[data-filter]').forEach(b=>{b.setAttribute('aria-pressed',b.classList.contains('active'));b.onclick=()=>{$$('[data-filter]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',String(x===b))});$$('.industry-card').forEach(c=>c.hidden=b.dataset.filter!=='all'&&c.dataset.category!==b.dataset.filter)}});
-function brief(){const d=new FormData($('#inquiry'));let ar=lang==='ar';return `${ar?'استفسار مشروع جديد — سين':'New project inquiry — Seen Media'}\n\n${ar?'الاسم':'Name'}: ${d.get('name')}\n${ar?'البريد الإلكتروني':'Email'}: ${d.get('email')}\n${ar?'الشركة':'Company'}: ${d.get('company')||'—'}\n${ar?'الهاتف':'Phone'}: ${d.get('phone')||'—'}\n${ar?'الخدمات':'Services'}: ${[...selectedServices].map(i=>services[i][ar?1:0]).join(', ')||'—'}\n${ar?'القطاع':'Industry'}: ${selectedIndustry!==null?industries[selectedIndustry][ar?1:0]:'—'}\n\n${d.get('message')}`}
-function send(channel){if(!$('#inquiry').reportValidity())return;const text=brief();if(channel==='whatsapp')window.open('https://wa.me/201158189622?text='+encodeURIComponent(text),'_blank','noopener,noreferrer');else location.href='mailto:info@seen.ae?subject='+encodeURIComponent(lang==='ar'?'استفسار مشروع — سين':'Project inquiry — Seen Media')+'&body='+encodeURIComponent(text);$('#form-status').textContent=lang==='ar'?'طلبك جاهز للمراجعة والإرسال في التطبيق المختار.':'Your brief is ready to review and send in the selected app.'}
-$('#inquiry').onsubmit=e=>{e.preventDefault();send('whatsapp')};$('#email-send').onclick=()=>send('email');
-function splitPhilosophy(){const root=$('.illuminate');[...root.childNodes].forEach(n=>{if(n.nodeType===3){let f=document.createDocumentFragment();n.textContent.split(/(\s+)/).forEach(w=>{if(w.trim()){let e=document.createElement('span');e.className='word';e.textContent=w;f.append(e)}else f.append(document.createTextNode(w))});n.replaceWith(f)}else if(n.tagName==='EM'){n.innerHTML=n.textContent.split(' ').map(w=>'<span class="word">'+w+'</span>').join(' ')}})}
-let reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const fine=matchMedia('(pointer:fine)').matches;
-function scrollUpdate(){$('#header').classList.toggle('scrolled',scrollY>40);if(!reduced){let r=$('.illuminate').getBoundingClientRect();let progress=Math.max(0,Math.min(1,(innerHeight-r.top)/(innerHeight*.7)));let words=$$('.illuminate .word');words.forEach((w,i)=>w.classList.toggle('lit',i/words.length<progress))}}addEventListener('scroll',scrollUpdate,{passive:true});scrollUpdate();if(reduced)$$('.illuminate .word').forEach(w=>w.classList.add('lit'));
-if(!reduced){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('reveal');observer.unobserve(e.target)}}),{threshold:.12});$$('.section-heading,.industry-card,.work-grid figure').forEach(e=>observer.observe(e));if(fine){addEventListener('pointermove',e=>{let c=$('.cursor');c.style.opacity='1';c.style.transform=`translate(${e.clientX-11}px,${e.clientY-11}px)`},{passive:true});$$('.tilt,.magnetic').forEach(el=>{el.addEventListener('pointermove',e=>{let r=el.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;el.style.transform=el.classList.contains('magnetic')?`translate(${x*9}px,${y*9}px)`:`perspective(1000px) rotateX(${-y*3}deg) rotateY(${x*3}deg) translateY(-3px)`});el.addEventListener('pointerleave',()=>el.style.transform='')})}}
+const $ = (s) => document.querySelector(s),
+  $$ = (s) => [...document.querySelectorAll(s)];
+let lang = "en";
+try {
+  lang = localStorage.getItem("seen-language") === "ar" ? "ar" : "en";
+} catch {}
+const services = [
+  ["Digital Marketing", "التسويق الرقمي"],
+  ["Content Production", "إنتاج المحتوى"],
+  ["Event Coverage", "تغطية الفعاليات"],
+];
+const industries = [
+  ["Restaurants & Cafes", "المطاعم والكافيهات"],
+  ["Clinics", "العيادات"],
+  ["Personal Care & Cosmetics", "العناية والتجميل"],
+  ["Sports Academies", "الأكاديميات الرياضية"],
+  ["Health & Wellness", "الصحة والعافية"],
+];
+const selectedServices = new Set();
+let selectedIndustry = null;
+function tags() {
+  [
+    ["#service-tags", services, true],
+    ["#industry-tags", industries, false],
+  ].forEach(([el, list, multi]) => {
+    $(el).replaceChildren();
+    list.forEach((item, i) => {
+      let b = document.createElement("button");
+      b.type = "button";
+      b.textContent = item[lang === "ar" ? 1 : 0];
+      b.setAttribute(
+        "aria-pressed",
+        multi ? selectedServices.has(i) : selectedIndustry === i,
+      );
+      b.onclick = () => {
+        if (multi) {
+          selectedServices.has(i)
+            ? selectedServices.delete(i)
+            : selectedServices.add(i);
+        } else selectedIndustry = selectedIndustry === i ? null : i;
+        tags();
+      };
+      $(el).append(b);
+    });
+  });
+}
+function translate() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  $$("[data-en]").forEach((e) => (e.innerHTML = e.dataset[lang]));
+  $("#language").innerHTML =
+    lang === "en"
+      ? "EN <span>/</span> AR"
+      : "العربية <span>/</span> الإنجليزية";
+  $("#language").setAttribute(
+    "aria-label",
+    lang === "en" ? "Switch to Arabic" : "التبديل إلى الإنجليزية",
+  );
+  $("#menu").setAttribute(
+    "aria-label",
+    lang === "en" ? "Toggle menu" : "فتح وإغلاق القائمة",
+  );
+  $("#nav").setAttribute(
+    "aria-label",
+    lang === "en" ? "Main navigation" : "القائمة الرئيسية",
+  );
+  document.title =
+    lang === "en"
+      ? "Seen Media — Be seen. Be remembered."
+      : "سين للإعلام والدعاية — حضور يترك أثرًا";
+  tags();
+  splitPhilosophy();
+  updatePortfolioStatus();
+  $$("[data-alt-en]").forEach(
+    (e) => (e.alt = e.dataset[lang === "ar" ? "altAr" : "altEn"]),
+  );
+  $$("[data-label-en]").forEach((e) =>
+    e.setAttribute(
+      "aria-label",
+      e.dataset[lang === "ar" ? "labelAr" : "labelEn"],
+    ),
+  );
+  $$("[data-src-en]").forEach(
+    (e) => (e.src = e.dataset[lang === "ar" ? "srcAr" : "srcEn"]),
+  );
+  $("#form-status").textContent = "";
+  $$("input,textarea").forEach((e) => e.setCustomValidity(""));
+}
+$("#language").onclick = () => {
+  lang = lang === "en" ? "ar" : "en";
+  try {
+    localStorage.setItem("seen-language", lang);
+  } catch {}
+  translate();
+};
+translate();
+$("#menu").onclick = () => {
+  let open = $("#nav").classList.toggle("open");
+  $("#menu").setAttribute("aria-expanded", String(open));
+  $("#menu").textContent = open ? "×" : "☰";
+};
+$$("nav a").forEach(
+  (a) =>
+    (a.onclick = () => {
+      $("#nav").classList.remove("open");
+      $("#menu").setAttribute("aria-expanded", "false");
+      $("#menu").textContent = "☰";
+    }),
+);
+$$(".service").forEach((d) =>
+  d.addEventListener("toggle", () => {
+    if (d.open)
+      $$(".service").forEach((o) => {
+        if (o !== d) o.open = false;
+      });
+  }),
+);
+$$("[data-service]").forEach(
+  (a) =>
+    (a.onclick = () => {
+      selectedServices.add(Number(a.dataset.service));
+      tags();
+    }),
+);
+$$("[data-filter]").forEach((b) => {
+  b.setAttribute("aria-pressed", b.classList.contains("active"));
+  b.onclick = () => {
+    $$("[data-filter]").forEach((x) => {
+      x.classList.toggle("active", x === b);
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+    $$(".industry-card").forEach(
+      (c) =>
+        (c.hidden =
+          b.dataset.filter !== "all" &&
+          c.dataset.category !== b.dataset.filter),
+    );
+  };
+});
+function brief() {
+  const d = new FormData($("#inquiry"));
+  let ar = lang === "ar";
+  return `${ar ? "استفسار مشروع جديد — سين" : "New project inquiry — Seen Media"}\n\n${ar ? "الاسم" : "Name"}: ${d.get("name")}\n${ar ? "البريد الإلكتروني" : "Email"}: ${d.get("email")}\n${ar ? "الشركة" : "Company"}: ${d.get("company") || "—"}\n${ar ? "الهاتف" : "Phone"}: ${d.get("phone") || "—"}\n${ar ? "الخدمات" : "Services"}: ${[...selectedServices].map((i) => services[i][ar ? 1 : 0]).join(", ") || "—"}\n${ar ? "القطاع" : "Industry"}: ${selectedIndustry !== null ? industries[selectedIndustry][ar ? 1 : 0] : "—"}\n\n${d.get("message")}`;
+}
+function send(channel) {
+  if (!$("#inquiry").reportValidity()) return;
+  const text = brief();
+  if (channel === "whatsapp")
+    window.open(
+      "https://wa.me/201158189622?text=" + encodeURIComponent(text),
+      "_blank",
+      "noopener,noreferrer",
+    );
+  else
+    location.href =
+      "mailto:info@seen.ae?subject=" +
+      encodeURIComponent(
+        lang === "ar" ? "استفسار مشروع — سين" : "Project inquiry — Seen Media",
+      ) +
+      "&body=" +
+      encodeURIComponent(text);
+  $("#form-status").textContent =
+    lang === "ar"
+      ? "طلبك جاهز للمراجعة والإرسال في التطبيق المختار."
+      : "Your brief is ready to review and send in the selected app.";
+}
+$("#inquiry").onsubmit = (e) => {
+  e.preventDefault();
+  send("whatsapp");
+};
+$("#email-send").onclick = () => send("email");
+function splitPhilosophy() {
+  const root = $(".illuminate");
+  [...root.childNodes].forEach((n) => {
+    if (n.nodeType === 3) {
+      let f = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach((w) => {
+        if (w.trim()) {
+          let e = document.createElement("span");
+          e.className = "word";
+          e.textContent = w;
+          f.append(e);
+        } else f.append(document.createTextNode(w));
+      });
+      n.replaceWith(f);
+    } else if (n.tagName === "EM") {
+      n.innerHTML = n.textContent
+        .split(" ")
+        .map((w) => '<span class="word">' + w + "</span>")
+        .join(" ");
+    }
+  });
+}
+let reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const fine = matchMedia("(pointer:fine)").matches;
+function scrollUpdate() {
+  $("#header").classList.toggle("scrolled", scrollY > 40);
+  if (!reduced) {
+    let r = $(".illuminate").getBoundingClientRect();
+    let progress = Math.max(
+      0,
+      Math.min(1, (innerHeight - r.top) / (innerHeight * 0.7)),
+    );
+    let words = $$(".illuminate .word");
+    words.forEach((w, i) =>
+      w.classList.toggle("lit", i / words.length < progress),
+    );
+  }
+}
+addEventListener("scroll", scrollUpdate, { passive: true });
+scrollUpdate();
+if (reduced) $$(".illuminate .word").forEach((w) => w.classList.add("lit"));
+if (!reduced) {
+  const observer = new IntersectionObserver(
+    (entries) =>
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add("reveal");
+          observer.unobserve(e.target);
+        }
+      }),
+    { threshold: 0.12 },
+  );
+  $$(".section-heading,.industry-card,.work-grid figure").forEach((e) =>
+    observer.observe(e),
+  );
+  if (fine) {
+    addEventListener(
+      "pointermove",
+      (e) => {
+        let c = $(".cursor");
+        c.style.opacity = "1";
+        c.style.transform = `translate(${e.clientX - 11}px,${e.clientY - 11}px)`;
+      },
+      { passive: true },
+    );
+    $$(".tilt,.magnetic").forEach((el) => {
+      el.addEventListener("pointermove", (e) => {
+        let r = el.getBoundingClientRect(),
+          x = (e.clientX - r.left) / r.width - 0.5,
+          y = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transform = el.classList.contains("magnetic")
+          ? `translate(${x * 9}px,${y * 9}px)`
+          : `perspective(1000px) rotateX(${-y * 3}deg) rotateY(${x * 3}deg) translateY(-3px)`;
+      });
+      el.addEventListener("pointerleave", () => (el.style.transform = ""));
+    });
+  }
+}
 
 // Keep form validation feedback in the selected page language.
-$$('input,textarea').forEach(input=>{input.addEventListener('input',()=>input.setCustomValidity(''));input.addEventListener('invalid',()=>{if(lang==='ar')input.setCustomValidity(input.validity.valueMissing?'يرجى تعبئة هذا الحقل.':input.validity.typeMismatch?'يرجى إدخال بريد إلكتروني صحيح.':'يرجى مراجعة البيانات المدخلة.');else input.setCustomValidity('')})});
+$$("input,textarea").forEach((input) => {
+  input.addEventListener("input", () => input.setCustomValidity(""));
+  input.addEventListener("invalid", () => {
+    if (lang === "ar")
+      input.setCustomValidity(
+        input.validity.valueMissing
+          ? "يرجى تعبئة هذا الحقل."
+          : input.validity.typeMismatch
+            ? "يرجى إدخال بريد إلكتروني صحيح."
+            : "يرجى مراجعة البيانات المدخلة.",
+      );
+    else input.setCustomValidity("");
+  });
+});
 
-function updatePortfolioStatus(){const el=$('#portfolio-status');if(!el)return;const count=$$('.work-item').filter(item=>!item.hidden).length;el.textContent=lang==='ar'?`${new Intl.NumberFormat('ar-EG').format(count)} أعمال`:`${count} projects`}
-$$('[data-work-filter]').forEach(button=>button.addEventListener('click',()=>{const category=button.dataset.workFilter;$$('[data-work-filter]').forEach(b=>{const active=b===button;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});$$('.work-item').forEach(item=>{item.hidden=category!=='all'&&item.dataset.workCategory!==category;item.style.transform=''});updatePortfolioStatus()}));
+function updatePortfolioStatus() {
+  const el = $("#portfolio-status");
+  if (!el) return;
+  const count = $$(".work-item").filter((item) => !item.hidden).length;
+  el.textContent =
+    lang === "ar"
+      ? `${new Intl.NumberFormat("ar-EG").format(count)} أعمال`
+      : `${count} projects`;
+}
+$$("[data-work-filter]").forEach((button) =>
+  button.addEventListener("click", () => {
+    const category = button.dataset.workFilter;
+    $$("[data-work-filter]").forEach((b) => {
+      const active = b === button;
+      b.classList.toggle("active", active);
+      b.setAttribute("aria-pressed", String(active));
+    });
+    $$(".work-item").forEach((item) => {
+      item.hidden =
+        category !== "all" && item.dataset.workCategory !== category;
+      item.style.transform = "";
+    });
+    updatePortfolioStatus();
+  }),
+);
